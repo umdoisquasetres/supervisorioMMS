@@ -6,8 +6,9 @@
         xmlns:local="clr-namespace:supervisorioMMS"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
-        Title="SCADA Supervisório" Height="720" Width="1280"
-        WindowStartupLocation="CenterScreen"
+        Title="SCADA Supervisório"
+        WindowState="Maximized"
+        MinHeight="720" MinWidth="1280"
         Background="#FF1E1E1E">
     <Window.Resources>
         <Style TargetType="Button" x:Key="NavButton">
@@ -36,16 +37,19 @@
 
     <DockPanel>
         <!-- Header -->
-                <Border DockPanel.Dock="Top" Background="#FF007ACC" Padding="15">
+        <Border DockPanel.Dock="Top" Background="{StaticResource AccentColor}" Padding="15">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="Sistema Supervisório SCADA - MMS" Foreground="White" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="Salvar Sinótico" Margin="10,0" Padding="10,5" Background="#FF28A745" Foreground="White" Click="SaveSynoptic_Click"/>
-                <Button Grid.Column="2" Content="Carregar Sinótico" Margin="10,0" Padding="10,5" Background="#FF007ACC" Foreground="White" Click="LoadSynoptic_Click"/>
+                <TextBlock Grid.Column="0" Text="M.M Soluções" Foreground="White" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Text="Sistema Supervisório SCADA" Foreground="White" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <Button Content="Salvar Sinótico" Margin="5,0" Padding="10,5" Background="{StaticResource SuccessColor}" Foreground="White" Click="SaveSynoptic_Click"/>
+                    <Button Content="Carregar Sinótico" Margin="5,0" Padding="10,5" Background="{StaticResource AccentColorDark}" Foreground="White" Click="LoadSynoptic_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
 

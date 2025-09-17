@@ -3,7 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:supervisorioMMS.Views"
              xmlns:models="clr-namespace:supervisorioMMS.Models"
              xmlns:converters="clr-namespace:supervisorioMMS.Converters"
              mc:Ignorable="d" 
@@ -13,7 +12,7 @@
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="180"/>
             <ColumnDefinition Width="*"/>
             <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
@@ -21,15 +20,15 @@
         <!-- Caixa de Ferramentas -->
         <Border Grid.Column="0" Background="{StaticResource SecondaryBackgroundColor}">
             <StackPanel>
-                <TextBlock Text="Componentes" Style="{StaticResource {x:Type TextBlock}}" FontSize="16" FontWeight="Bold" Padding="10"/>
-                <ListBox x:Name="ToolboxList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextColor}">
+                <TextBlock Text="Componentes" FontSize="16" FontWeight="Bold" Padding="10"/>
+                <ListBox x:Name="ToolboxList" BorderThickness="0" Foreground="{StaticResource TextColor}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
-                            <TextBlock Text="{Binding}" Padding="10,5"/>
+                            <TextBlock Text="{Binding}" Padding="10,8"/>
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                     <ListBox.ItemContainerStyle>
-                        <Style TargetType="ListBoxItem">
+                        <Style TargetType="ListBoxItem" BasedOn="{StaticResource {x:Type ListBoxItem}}">
                             <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Toolbox_PreviewMouseLeftButtonDown"/>
                         </Style>
                     </ListBox.ItemContainerStyle>
@@ -40,23 +39,61 @@
         <!-- Área de Edição (Canvas) -->
         <ItemsControl Grid.Column="1" x:Name="EditorItemsControl" ItemsSource="{Binding SynopticItems}" AllowDrop="True" Drop="EditorCanvas_Drop">
             <ItemsControl.Resources>
-                <!-- Template para renderizar um Motor -->
+                <!-- Template para Motor -->
                 <DataTemplate DataType="{x:Type models:SynopticMotor}">
                     <StackPanel>
-                        <Ellipse Fill="{Binding LinkedTag.Value, Converter={StaticResource BoolToBrush}}" Width="80" Height="80"/>
-                        <TextBlock Text="{Binding Label}" Style="{StaticResource {x:Type TextBlock}}" HorizontalAlignment="Center"/>
+                        <Ellipse Fill="{Binding LinkedTag.Value, Converter={StaticResource BoolToBrush}, FallbackValue=Gray}" Width="80" Height="80"/>
+                        <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"/>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
-                            <Button Content="Ligar" Command="{Binding TurnOnCommand}" Click="MotorOn_Click" Style="{StaticResource {x:Type Button}}" Width="50" Height="25" Margin="2"/>
-                            <Button Content="Desligar" Command="{Binding TurnOffCommand}" Click="MotorOff_Click" Style="{StaticResource {x:Type Button}}" Width="50" Height="25" Margin="2"/>
+                            <Button Content="Ligar" Click="MotorOn_Click" Width="50" Height="25" Margin="2"/>
+                            <Button Content="Desligar" Click="MotorOff_Click" Width="50" Height="25" Margin="2"/>
                         </StackPanel>
                     </StackPanel>
                 </DataTemplate>
-                <!-- Template para renderizar um Sensor -->
+                
+                <!-- Template para Sensor -->
                 <DataTemplate DataType="{x:Type models:SynopticSensor}">
-                    <Border Background="{StaticResource SecondaryBackgroundColor}" Padding="10" CornerRadius="3">
+                    <Border Background="{StaticResource SecondaryBackgroundColor}" Padding="10" CornerRadius="3" MinWidth="100">
                         <StackPanel>
-                            <TextBlock Text="{Binding Label}" Style="{StaticResource {x:Type TextBlock}}"/>
-                            <TextBlock Text="{Binding LinkedTag.Value}" Foreground="{StaticResource SuccessColor}" FontSize="16" FontWeight="Bold"/>
+                            <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"/>
+                            <TextBlock Text="{Binding LinkedTag.Value, FallbackValue=--}" Foreground="{StaticResource SuccessColor}" FontSize="16" FontWeight="Bold" HorizontalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+
+                <!-- Template para Válvula -->
+                <DataTemplate DataType="{x:Type models:SynopticValve}">
+                    <StackPanel>
+                        <Path Width="80" Height="60" Stretch="Fill" Stroke="{StaticResource TextColor}" StrokeThickness="2"
+                              Fill="{Binding LinkedTag.Value, Converter={StaticResource BoolToBrush}, FallbackValue=Gray}">
+                            <Path.Data>
+                                <PathGeometry>
+                                    <PathFigure IsClosed="True" StartPoint="0,0"><LineSegment Point="40,30"/><LineSegment Point="0,60"/></PathFigure>
+                                    <PathFigure IsClosed="True" StartPoint="80,0"><LineSegment Point="40,30"/><LineSegment Point="80,60"/></PathFigure>
+                                </PathGeometry>
+                            </Path.Data>
+                        </Path>
+                        <TextBlock Text="{Binding Label}" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Button Content="Abrir" Click="ValveOpen_Click" Width="50" Height="25" Margin="2"/>
+                            <Button Content="Fechar" Click="ValveClose_Click" Width="50" Height="25" Margin="2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+
+                <!-- Template para Display de Valor -->
+                <DataTemplate DataType="{x:Type models:SynopticValueDisplay}">
+                    <Border Background="{StaticResource SecondaryBackgroundColor}" BorderBrush="{StaticResource AccentColor}" BorderThickness="2" Padding="10" CornerRadius="5" MinWidth="120">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Label}" FontWeight="Bold" HorizontalAlignment="Center"/>
+                            <TextBlock FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,5,0,0">
+                                <TextBlock.Text>
+                                    <MultiBinding StringFormat="{}{0} {1}">
+                                        <Binding Path="LinkedTag.Value" FallbackValue="--"/>
+                                        <Binding Path="Unit"/>
+                                    </MultiBinding>
+                                </TextBlock.Text>
+                            </TextBlock>
                         </StackPanel>
                     </Border>
                 </DataTemplate>
@@ -66,12 +103,11 @@
                     <Setter Property="Canvas.Left" Value="{Binding X}"/>
                     <Setter Property="Canvas.Top" Value="{Binding Y}"/>
                     <EventSetter Event="PreviewMouseLeftButtonDown" Handler="EditorItem_PreviewMouseLeftButtonDown"/>
-                    <EventSetter Event="MouseLeftButtonUp" Handler="EditorItem_MouseLeftButtonUp"/>
                     <Style.Triggers>
                         <DataTrigger Binding="{Binding IsSelected}" Value="True">
                             <Setter Property="Effect">
                                 <Setter.Value>
-                                    <DropShadowEffect Color="{Binding Source={StaticResource HighlightColor}, Path=Color}" ShadowDepth="0" BlurRadius="10"/>
+                                    <DropShadowEffect Color="{Binding Source={StaticResource HighlightColor}, Path=Color}" ShadowDepth="0" BlurRadius="10" Opacity="0.8"/>
                                 </Setter.Value>
                             </Setter>
                         </DataTrigger>
@@ -79,7 +115,6 @@
                 </Style>
             </ItemsControl.Resources>
             
-            <!-- Define o painel onde os itens serão desenhados -->
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate>
                     <Canvas Background="{StaticResource PrimaryBackgroundColor}"/>
@@ -89,33 +124,44 @@
 
         <!-- Painel de Propriedades -->
         <Border Grid.Column="2" Background="{StaticResource SecondaryBackgroundColor}" Padding="10">
-            <StackPanel>
-                <TextBlock Text="Propriedades" Style="{StaticResource {x:Type TextBlock}}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
-                <ContentControl Content="{Binding SelectedSynopticItem}">
-                    <ContentControl.Resources>
-                        <!-- Template para propriedades de Motor -->
-                        <DataTemplate DataType="{x:Type models:SynopticMotor}">
-                            <StackPanel>
-                                <TextBlock Text="Nome:" Style="{StaticResource {x:Type TextBlock}}"/>
-                                <TextBox Text="{Binding Label}" Margin="0,5,0,10"/>
-
-                                <TextBlock Text="Tag Modbus:" Style="{StaticResource {x:Type TextBlock}}"/>
-                                <TextBox Text="{Binding TagName}" Margin="0,5,0,10"/>
-                            </StackPanel>
-                        </DataTemplate>
-                        <!-- Template para propriedades de Sensor -->
-                        <DataTemplate DataType="{x:Type models:SynopticSensor}">
-                            <StackPanel>
-                                <TextBlock Text="Nome:" Style="{StaticResource {x:Type TextBlock}}"/>
-                                <TextBox Text="{Binding Label}" Margin="0,5,0,10"/>
-
-                                <TextBlock Text="Tag Modbus:" Style="{StaticResource {x:Type TextBlock}}"/>
-                                <TextBox Text="{Binding TagName}" Margin="0,5,0,10"/>
-                            </StackPanel>
-                        </DataTemplate>
-                    </ContentControl.Resources>
-                </ContentControl>
-            </StackPanel>
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <TextBlock Text="Propriedades" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                    <ContentControl Content="{Binding SelectedSynopticItem}">
+                        <ContentControl.Resources>
+                            <!-- Template para propriedades de Motor -->
+                            <DataTemplate DataType="{x:Type models:SynopticMotor}">
+                                <StackPanel>
+                                    <TextBlock Text="Nome:"/><TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                    <TextBlock Text="Tag Modbus:"/><TextBox Text="{Binding TagName, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            <!-- Template para propriedades de Sensor -->
+                            <DataTemplate DataType="{x:Type models:SynopticSensor}">
+                                <StackPanel>
+                                    <TextBlock Text="Nome:"/><TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                    <TextBlock Text="Tag Modbus:"/><TextBox Text="{Binding TagName, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            <!-- Template para propriedades de Válvula -->
+                            <DataTemplate DataType="{x:Type models:SynopticValve}">
+                                <StackPanel>
+                                    <TextBlock Text="Nome:"/><TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                    <TextBlock Text="Tag Modbus:"/><TextBox Text="{Binding TagName, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                </StackPanel>
+                            </DataTemplate>
+                            <!-- Template para propriedades de Display de Valor -->
+                            <DataTemplate DataType="{x:Type models:SynopticValueDisplay}">
+                                <StackPanel>
+                                    <TextBlock Text="Nome:"/><TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                    <TextBlock Text="Tag Modbus:"/><TextBox Text="{Binding TagName, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                    <TextBlock Text="Unidade:"/><TextBox Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}" Margin="0,5,0,10"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ContentControl.Resources>
+                    </ContentControl>
+                </StackPanel>
+            </ScrollViewer>
         </Border>
     </Grid>
 </UserControl>

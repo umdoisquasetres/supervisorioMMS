@@ -1,9 +1,9 @@
 using NModbus;
 using System;
 using System.IO.Ports;
-using System.Linq;
 using System.Net.Sockets;
-using NModbus.Serial; // Adicionado para SerialPortAdapter
+using System.Threading.Tasks;
+using NModbus.Serial;
 
 namespace supervisorioMMS.Services
 {
@@ -12,69 +12,82 @@ namespace supervisorioMMS.Services
         private static readonly Lazy<ModbusService> _instance = new Lazy<ModbusService>(() => new ModbusService());
         public static ModbusService Instance => _instance.Value;
 
-        private TcpClient? _tcpClient; // Para conexão TCP
-        private SerialPort? _serialPort; // Para conexão Serial
+        private TcpClient? _tcpClient;
+        private SerialPort? _serialPort;
         private IModbusMaster? _master;
 
         public bool IsConnected => (_tcpClient?.Connected ?? false) || (_serialPort?.IsOpen ?? false);
 
         private ModbusService() { }
 
-        // Conexão TCP/IP (mantida para compatibilidade, se necessário)
-        public bool Connect(string ipAddress, int port)
+        public async Task<bool> ConnectTcpAsync(string ipAddress, int port)
         {
+            if (IsConnected) Disconnect();
             try
             {
-                Disconnect();
-                _tcpClient = new TcpClient(ipAddress, port);
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(ipAddress, port);
                 var factory = new ModbusFactory();
                 _master = factory.CreateMaster(_tcpClient);
-                return true;
+                return _tcpClient.Connected;
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Erro ao conectar Modbus TCP: {ex.Message}");
+                Disconnect(); // Garante a limpeza em caso de falha
                 return false;
             }
         }
 
-        // Nova Conexão Serial (Modbus RTU)
-        public bool Connect(string comPort, int baudRate, int dataBits, Parity parity, StopBits stopBits)
+        public Task<bool> ConnectRtuAsync(string comPort, int baudRate, int dataBits, Parity parity, StopBits stopBits)
         {
-            try
+            return Task.Run(() =>
             {
-                Disconnect();
-                _serialPort = new SerialPort(comPort);
-                _serialPort.BaudRate = baudRate;
-                _serialPort.DataBits = dataBits;
-                _serialPort.Parity = parity;
-                _serialPort.StopBits = stopBits;
-                _serialPort.Open();
+                if (IsConnected) Disconnect();
+                try
+                {
+                    _serialPort = new SerialPort(comPort)
+                    {
+                        BaudRate = baudRate,
+                        DataBits = dataBits,
+                        Parity = parity,
+                        StopBits = stopBits,
+                        ReadTimeout = 500,
+                        WriteTimeout = 500
+                    };
+                    _serialPort.Open();
 
-                var factory = new ModbusFactory();
-                // Envolve SerialPort em um SerialPortAdapter para NModbus
-                _master = factory.CreateRtuMaster(new SerialPortAdapter(_serialPort));
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao conectar Modbus RTU: {ex.Message}");
-                return false;
-            }
+                    var factory = new ModbusFactory();
+                    _master = factory.CreateRtuMaster(new SerialPortAdapter(_serialPort));
+                    return _serialPort.IsOpen;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Erro ao conectar Modbus RTU: {ex.Message}");
+                    Disconnect(); // Garante a limpeza em caso de falha
+                    return false;
+                }
+            });
         }
 
         public void Disconnect()
         {
+            _master?.Dispose();
+            _master = null;
+
             _tcpClient?.Close();
+            _tcpClient = null;
+
             _serialPort?.Close();
+            _serialPort = null;
         }
 
-        public int[]? ReadHoldingRegisters(int startingAddress, int quantity)
+        public async Task<int[]?> ReadHoldingRegistersAsync(int startingAddress, int quantity)
         {
             if (!IsConnected || _master == null) return null;
             try
             {
-                ushort[] result = _master.ReadHoldingRegisters(0, (ushort)startingAddress, (ushort)quantity);
+                ushort[] result = await _master.ReadHoldingRegistersAsync(0, (ushort)startingAddress, (ushort)quantity);
                 return Array.ConvertAll(result, val => (int)val);
             }
             catch (Exception ex)
@@ -84,12 +97,12 @@ namespace supervisorioMMS.Services
             }
         }
 
-        public bool[]? ReadCoils(int startingAddress, int quantity)
+        public async Task<bool[]?> ReadCoilsAsync(int startingAddress, int quantity)
         {
             if (!IsConnected || _master == null) return null;
             try
             {
-                return _master.ReadCoils(0, (ushort)startingAddress, (ushort)quantity);
+                return await _master.ReadCoilsAsync(0, (ushort)startingAddress, (ushort)quantity);
             }
             catch (Exception ex)
             {
@@ -98,12 +111,12 @@ namespace supervisorioMMS.Services
             }
         }
 
-        public bool WriteSingleCoil(int startingAddress, bool value)
+        public async Task<bool> WriteSingleCoilAsync(int startingAddress, bool value)
         {
             if (!IsConnected || _master == null) return false;
             try
             {
-                _master.WriteSingleCoil(0, (ushort)startingAddress, value);
+                await _master.WriteSingleCoilAsync(0, (ushort)startingAddress, value);
                 return true;
             }
             catch (Exception ex)
@@ -113,12 +126,12 @@ namespace supervisorioMMS.Services
             }
         }
 
-        public bool WriteSingleRegister(int startingAddress, int value)
+        public async Task<bool> WriteSingleRegisterAsync(int startingAddress, int value)
         {
             if (!IsConnected || _master == null) return false;
             try
             {
-                _master.WriteSingleRegister(0, (ushort)startingAddress, (ushort)value);
+                await _master.WriteSingleRegisterAsync(0, (ushort)startingAddress, (ushort)value);
                 return true;
             }
             catch (Exception ex)

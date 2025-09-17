@@ -1,16 +1,17 @@
-using System.Windows;
-using supervisorioMMS.Views;
-using System.IO;
-using System.Text.Json;
-using System.Collections.ObjectModel;
+using Microsoft.Win32;
 using supervisorioMMS.Models;
+using supervisorioMMS.Views;
+using System;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Windows;
+using Newtonsoft.Json;
 
 namespace supervisorioMMS
 {
     public partial class MainWindow : Window
     {
         private PrincipalView? _principalView;
-        private const string LayoutFileName = "synoptic_layout.json";
 
         public MainWindow()
         {
@@ -21,7 +22,10 @@ namespace supervisorioMMS
 
         private void NavPrincipal_Click(object sender, RoutedEventArgs e)
         {
-            _principalView = new PrincipalView();
+            if (_principalView == null)
+            {
+                _principalView = new PrincipalView();
+            }
             MainContent.Content = _principalView;
         }
 
@@ -59,47 +63,73 @@ namespace supervisorioMMS
         {
             if (_principalView == null) return;
 
-            try
+            SaveFileDialog saveFileDialog = new SaveFileDialog
             {
-                var options = new JsonSerializerOptions { WriteIndented = true };
-                var jsonString = JsonSerializer.Serialize(_principalView.SynopticItems, options);
-                await File.WriteAllTextAsync(LayoutFileName, jsonString);
-                MessageBox.Show("Layout salvo com sucesso!", "Salvar", MessageBoxButton.OK, MessageBoxImage.Information);
-            }
-            catch (Exception ex)
+                Filter = "JSON File (*.json)|*.json",
+                Title = "Salvar Layout Sinótico",
+                DefaultExt = "json",
+                AddExtension = true
+            };
+
+            if (saveFileDialog.ShowDialog() == true)
             {
-                MessageBox.Show($"Erro ao salvar o layout: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                try
+                {
+                    var settings = new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Objects,
+                        Formatting = Formatting.Indented
+                    };
+                    var jsonString = JsonConvert.SerializeObject(_principalView.SynopticItems, settings);
+                    await File.WriteAllTextAsync(saveFileDialog.FileName, jsonString);
+                    MessageBox.Show("Layout salvo com sucesso!", "Salvar", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro ao salvar o layout: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
 
         private async void LoadSynoptic_Click(object sender, RoutedEventArgs e)
         {
-            if (_principalView == null) return;
-
-            try
+            if (_principalView == null)
             {
-                if (!File.Exists(LayoutFileName))
-                {
-                    MessageBox.Show("Nenhum layout salvo encontrado.", "Carregar", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                var jsonString = await File.ReadAllTextAsync(LayoutFileName);
-                var loadedItems = JsonSerializer.Deserialize<ObservableCollection<SynopticItem>>(jsonString);
-
-                if (loadedItems != null)
-                {
-                    _principalView.SynopticItems.Clear();
-                    foreach (var item in loadedItems)
-                    {
-                        _principalView.SynopticItems.Add(item);
-                    }
-                    MessageBox.Show("Layout carregado com sucesso!", "Carregar", MessageBoxButton.OK, MessageBoxImage.Information);
-                }
+                _principalView = new PrincipalView();
+                MainContent.Content = _principalView;
             }
-            catch (Exception ex)
+
+            OpenFileDialog openFileDialog = new OpenFileDialog
             {
-                MessageBox.Show($"Erro ao carregar o layout: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                Filter = "JSON File (*.json)|*.json",
+                Title = "Carregar Layout Sinótico"
+            };
+
+            if (openFileDialog.ShowDialog() == true)
+            {
+                try
+                {
+                    var jsonString = await File.ReadAllTextAsync(openFileDialog.FileName);
+                    var settings = new JsonSerializerSettings
+                    {
+                        TypeNameHandling = TypeNameHandling.Objects
+                    };
+                    var loadedItems = JsonConvert.DeserializeObject<ObservableCollection<SynopticItem>>(jsonString, settings);
+
+                    if (loadedItems != null)
+                    {
+                        _principalView.SynopticItems.Clear();
+                        foreach (var item in loadedItems)
+                        {
+                            _principalView.SynopticItems.Add(item);
+                        }
+                        MessageBox.Show("Layout carregado com sucesso!", "Carregar", MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Erro ao carregar o layout: {ex.Message}", "Erro", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
             }
         }
     }

@@ -51,7 +51,19 @@ namespace supervisorioMMS.Models
             }
         }
 
-        public bool IsSelected { get; set; }
+        private bool _isSelected;
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (_isSelected != value)
+                {
+                    _isSelected = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
 
         public SynopticItem()
         {
@@ -79,7 +91,7 @@ namespace supervisorioMMS.Models
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                TagService.Instance.WriteTagValue(TagName, true);
+                _ = TagService.Instance.WriteTagValueAsync(TagName, true);
             }
         }
 
@@ -87,7 +99,7 @@ namespace supervisorioMMS.Models
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                TagService.Instance.WriteTagValue(TagName, false);
+                _ = TagService.Instance.WriteTagValueAsync(TagName, false);
             }
         }
     }
@@ -95,5 +107,32 @@ namespace supervisorioMMS.Models
     public class SynopticSensor : SynopticItem
     {
         public string Label { get; set; } = "Sensor";
+    }
+
+    public class SynopticValve : SynopticItem
+    {
+        public string Label { get; set; } = "Válvula";
+
+        public void Open()
+        {
+            if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
+            {
+                _ = TagService.Instance.WriteTagValueAsync(TagName, true);
+            }
+        }
+
+        public void Close()
+        {
+            if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
+            {
+                _ = TagService.Instance.WriteTagValueAsync(TagName, false);
+            }
+        }
+    }
+
+    public class SynopticValueDisplay : SynopticItem
+    {
+        public string Label { get; set; } = "Display";
+        public string Unit { get; set; } = "%";
     }
 }

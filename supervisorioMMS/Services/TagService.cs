@@ -1,7 +1,9 @@
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using System.Windows.Threading;
 
 namespace supervisorioMMS.Services
@@ -48,8 +50,11 @@ namespace supervisorioMMS.Services
         {
             Tags = new ObservableCollection<ModbusTag>
             {
-                new ModbusTag { Name = "Motor M-101 Status", Address = 0, DataType = ModbusDataType.Coil, Value = false },
-                new ModbusTag { Name = "Nível Tanque 1", Address = 0, DataType = ModbusDataType.HoldingRegister, Value = 0 }
+                new ModbusTag { Name = "Motor_M101_Status", Address = 0, DataType = ModbusDataType.Coil, Value = false },
+                new ModbusTag { Name = "Valvula_V101_Status", Address = 1, DataType = ModbusDataType.Coil, Value = false },
+                new ModbusTag { Name = "Nivel_Tanque_T101", Address = 0, DataType = ModbusDataType.HoldingRegister, Value = 75 },
+                new ModbusTag { Name = "Temperatura_Tanque_T101", Address = 1, DataType = ModbusDataType.HoldingRegister, Value = 25 },
+                new ModbusTag { Name = "Sensor_Pressao_P101", Address = 2, DataType = ModbusDataType.HoldingRegister, Value = 1 }
             };
 
             _pollingTimer = new DispatcherTimer
@@ -60,26 +65,26 @@ namespace supervisorioMMS.Services
             _pollingTimer.Start();
         }
 
-        private void PollingTimer_Tick(object sender, EventArgs e)
+        private async void PollingTimer_Tick(object sender, EventArgs e)
         {
             if (!ModbusService.Instance.IsConnected) return;
 
-            foreach (var tag in Tags)
+            foreach (var tag in Tags.ToList())
             {
                 try
                 {
                     switch (tag.DataType)
                     {
                         case ModbusDataType.Coil:
-                            bool[] coilValues = ModbusService.Instance.ReadCoils(tag.Address, 1);
-                            if (coilValues != null)
+                            bool[] coilValues = await ModbusService.Instance.ReadCoilsAsync(tag.Address, 1);
+                            if (coilValues != null && coilValues.Length > 0)
                             {
                                 tag.Value = coilValues[0];
                             }
                             break;
                         case ModbusDataType.HoldingRegister:
-                            int[] registerValues = ModbusService.Instance.ReadHoldingRegisters(tag.Address, 1);
-                            if (registerValues != null)
+                            int[] registerValues = await ModbusService.Instance.ReadHoldingRegistersAsync(tag.Address, 1);
+                            if (registerValues != null && registerValues.Length > 0)
                             {
                                 tag.Value = registerValues[0];
                             }
@@ -93,7 +98,7 @@ namespace supervisorioMMS.Services
             }
         }
 
-        public void WriteTagValue(string tagName, object value)
+        public async Task WriteTagValueAsync(string tagName, object value)
         {
             if (!ModbusService.Instance.IsConnected)
             {
@@ -115,13 +120,13 @@ namespace supervisorioMMS.Services
                     case ModbusDataType.Coil:
                         if (value is bool boolValue)
                         {
-                            ModbusService.Instance.WriteSingleCoil(tag.Address, boolValue);
+                            await ModbusService.Instance.WriteSingleCoilAsync(tag.Address, boolValue);
                         }
                         break;
                     case ModbusDataType.HoldingRegister:
                         if (value is int intValue || (value is string s && int.TryParse(s, out intValue)))
                         {
-                            ModbusService.Instance.WriteSingleRegister(tag.Address, intValue);
+                            await ModbusService.Instance.WriteSingleRegisterAsync(tag.Address, intValue);
                         }
                         break;
                 }
