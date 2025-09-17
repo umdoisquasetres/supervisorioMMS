@@ -1,5 +1,7 @@
-using EasyModbus;
+using NModbus;
 using System;
+using System.Linq;
+using System.Net.Sockets;
 
 namespace supervisorioMMS.Services
 {
@@ -8,31 +10,25 @@ namespace supervisorioMMS.Services
         private static readonly Lazy<ModbusService> _instance = new Lazy<ModbusService>(() => new ModbusService());
         public static ModbusService Instance => _instance.Value;
 
-        private ModbusClient _modbusClient;
+        private TcpClient? _tcpClient;
+        private IModbusMaster? _master;
 
-        public bool IsConnected => _modbusClient?.Connected ?? false;
+        public bool IsConnected => _tcpClient?.Connected ?? false;
 
-        private ModbusService()
-        {
-            _modbusClient = new ModbusClient();
-        }
+        private ModbusService() { }
 
         public bool Connect(string ipAddress, int port)
         {
             try
             {
-                if (IsConnected)
-                {
-                    _modbusClient.Disconnect();
-                }
-                _modbusClient.IPAddress = ipAddress;
-                _modbusClient.Port = port;
-                _modbusClient.Connect();
+                Disconnect(); // Garante que qualquer conexão anterior seja fechada
+                _tcpClient = new TcpClient(ipAddress, port);
+                var factory = new ModbusFactory();
+                _master = factory.CreateMaster(_tcpClient);
                 return true;
             }
             catch (Exception ex)
             {
-                // Log exception
                 Console.WriteLine($"Erro ao conectar Modbus: {ex.Message}");
                 return false;
             }
@@ -40,18 +36,17 @@ namespace supervisorioMMS.Services
 
         public void Disconnect()
         {
-            if (IsConnected)
-            {
-                _modbusClient.Disconnect();
-            }
+            _tcpClient?.Close();
         }
 
-                public int[] ReadHoldingRegisters(int startingAddress, int quantity)
+        public int[]? ReadHoldingRegisters(int startingAddress, int quantity)
         {
-            if (!IsConnected) return null;
+            if (!IsConnected || _master == null) return null;
             try
             {
-                return _modbusClient.ReadHoldingRegisters(startingAddress, quantity);
+                // NModbus retorna ushort[], então convertemos para int[]
+                ushort[] result = _master.ReadHoldingRegisters(0, (ushort)startingAddress, (ushort)quantity);
+                return Array.ConvertAll(result, val => (int)val);
             }
             catch (Exception ex)
             {
@@ -60,12 +55,12 @@ namespace supervisorioMMS.Services
             }
         }
 
-        public bool[] ReadCoils(int startingAddress, int quantity)
+        public bool[]? ReadCoils(int startingAddress, int quantity)
         {
-            if (!IsConnected) return null;
+            if (!IsConnected || _master == null) return null;
             try
             {
-                return _modbusClient.ReadCoils(startingAddress, quantity);
+                return _master.ReadCoils(0, (ushort)startingAddress, (ushort)quantity);
             }
             catch (Exception ex)
             {
@@ -74,12 +69,12 @@ namespace supervisorioMMS.Services
             }
         }
 
-                public bool WriteSingleCoil(int startingAddress, bool value)
+        public bool WriteSingleCoil(int startingAddress, bool value)
         {
-            if (!IsConnected) return false;
+            if (!IsConnected || _master == null) return false;
             try
             {
-                _modbusClient.WriteSingleCoil(startingAddress, value);
+                _master.WriteSingleCoil(0, (ushort)startingAddress, value);
                 return true;
             }
             catch (Exception ex)
@@ -91,10 +86,10 @@ namespace supervisorioMMS.Services
 
         public bool WriteSingleRegister(int startingAddress, int value)
         {
-            if (!IsConnected) return false;
+            if (!IsConnected || _master == null) return false;
             try
             {
-                _modbusClient.WriteSingleRegister(startingAddress, value);
+                _master.WriteSingleRegister(0, (ushort)startingAddress, (ushort)value);
                 return true;
             }
             catch (Exception ex)

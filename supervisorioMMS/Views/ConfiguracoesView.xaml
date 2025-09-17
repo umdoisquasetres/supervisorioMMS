@@ -31,7 +31,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="Porta:" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                        <TextBox Grid.Column="1" Text="502" Background="#FF3E3E3E" Foreground="White" BorderBrush="Gray" Padding="5"/>
+                                                <TextBox x:Name="PortTextBox" Grid.Column="1" Text="502" Background="#FF3E3E3E" Foreground="White" BorderBrush="Gray" Padding="5"/>
                     </Grid>
                 </StackPanel>
             </GroupBox>
