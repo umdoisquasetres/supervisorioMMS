@@ -36,8 +36,17 @@
 
     <DockPanel>
         <!-- Header -->
-        <Border DockPanel.Dock="Top" Background="#FF007ACC" Padding="15">
-            <TextBlock Text="Sistema Supervisório SCADA - MMS" Foreground="White" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center"/>
+                <Border DockPanel.Dock="Top" Background="#FF007ACC" Padding="15">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="Sistema Supervisório SCADA - MMS" Foreground="White" FontSize="24" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Content="Salvar Sinótico" Margin="10,0" Padding="10,5" Background="#FF28A745" Foreground="White" Click="SaveSynoptic_Click"/>
+                <Button Grid.Column="2" Content="Carregar Sinótico" Margin="10,0" Padding="10,5" Background="#FF007ACC" Foreground="White" Click="LoadSynoptic_Click"/>
+            </Grid>
         </Border>
 
         <!-- Footer -->
@@ -55,15 +64,15 @@
         </Border>
 
         <!-- Navigation -->
-        <Border DockPanel.Dock="Left" Background="#FF2D2D2D" Width="200">
+        <Border DockPanel.Dock="Left" Background="{StaticResource SecondaryBackgroundColor}" Width="200">
             <StackPanel>
-                <Button x:Name="NavPrincipal" Content="Tela Principal" Style="{StaticResource NavButton}" Click="NavPrincipal_Click"/>
-                <Button x:Name="NavAlarmes" Content="Alarmes" Style="{StaticResource NavButton}" Click="NavAlarmes_Click"/>
-                <Button x:Name="NavHistorico" Content="Histórico" Style="{StaticResource NavButton}" Click="NavHistorico_Click"/>
-                <Button x:Name="NavGraficos" Content="Gráficos" Style="{StaticResource NavButton}" Click="NavGraficos_Click"/>
-                                <Button x:Name="NavConfiguracoes" Content="Configurações" Style="{StaticResource NavButton}" Click="NavConfiguracoes_Click"/>
-                                <Button x:Name="NavUsuarios" Content="Usuários" Style="{StaticResource NavButton}" Click="NavUsuarios_Click"/>
-                <Button x:Name="NavTags" Content="Tags" Style="{StaticResource NavButton}" Click="NavTags_Click"/>
+                <Button x:Name="NavPrincipal" Content="Tela Principal" Click="NavPrincipal_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavAlarmes" Content="Alarmes" Click="NavAlarmes_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavHistorico" Content="Histórico" Click="NavHistorico_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavGraficos" Content="Gráficos" Click="NavGraficos_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavConfiguracoes" Content="Configurações" Click="NavConfiguracoes_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavUsuarios" Content="Usuários" Click="NavUsuarios_Click" Style="{StaticResource NavButton}"/>
+                <Button x:Name="NavTags" Content="Tags" Click="NavTags_Click" Style="{StaticResource NavButton}"/>
             </StackPanel>
         </Border>
 

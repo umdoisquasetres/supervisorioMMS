@@ -11,40 +11,96 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Configurações do Sistema" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="0" Text="Configurações do Sistema" Style="{StaticResource {x:Type TextBlock}}" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
         <StackPanel Grid.Row="1">
-            <!-- Connection Settings -->
-            <GroupBox Header="Conexão com CLP" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="Gray">
+            <!-- Connection Type Selector -->
+            <GroupBox Header="Tipo de Conexão Modbus" Style="{StaticResource {x:Type GroupBox}}">
+                <StackPanel Margin="10">
+                    <ComboBox x:Name="ConnectionTypeComboBox" SelectionChanged="ConnectionTypeComboBox_SelectionChanged" Style="{StaticResource {x:Type ComboBox}}">
+                        <ComboBoxItem Content="Modbus RTU (Serial)"/>
+                        <ComboBoxItem Content="Modbus TCP/IP"/>
+                    </ComboBox>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Modbus RTU Settings -->
+            <GroupBox x:Name="RtuSettingsGroupBox" Header="Conexão Modbus RTU" Style="{StaticResource {x:Type GroupBox}}" Margin="0,10,0,0">
                 <StackPanel Margin="10">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Endereço IP:" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBox x:Name="IpAddressTextBox" Grid.Column="1" Text="127.0.0.1" Background="#FF3E3E3E" Foreground="White" BorderBrush="Gray" Padding="5"/>
+                        <TextBlock Grid.Column="0" Text="Porta COM:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="ComPortComboBox" Grid.Column="1" Style="{StaticResource {x:Type ComboBox}}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Baud Rate:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="BaudRateComboBox" Grid.Column="1" Style="{StaticResource {x:Type ComboBox}}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Data Bits:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="DataBitsComboBox" Grid.Column="1" Style="{StaticResource {x:Type ComboBox}}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Parity:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="ParityComboBox" Grid.Column="1" Style="{StaticResource {x:Type ComboBox}}"/>
+                    </Grid>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="100"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Stop Bits:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <ComboBox x:Name="StopBitsComboBox" Grid.Column="1" Style="{StaticResource {x:Type ComboBox}}"/>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+
+            <!-- Modbus TCP/IP Settings -->
+            <GroupBox x:Name="TcpSettingsGroupBox" Header="Conexão Modbus TCP/IP" Style="{StaticResource {x:Type GroupBox}}" Margin="0,10,0,0" Visibility="Collapsed">
+                <StackPanel Margin="10">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="Endereço IP:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox x:Name="IpAddressTextBox" Grid.Column="1" Text="127.0.0.1" Style="{StaticResource {x:Type TextBox}}"/>
                     </Grid>
                     <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBlock Grid.Column="0" Text="Porta:" Foreground="White" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                                <TextBox x:Name="PortTextBox" Grid.Column="1" Text="502" Background="#FF3E3E3E" Foreground="White" BorderBrush="Gray" Padding="5"/>
+                        <TextBlock Grid.Column="0" Text="Porta:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                        <TextBox x:Name="PortTextBox" Grid.Column="1" Text="502" Style="{StaticResource {x:Type TextBox}}"/>
                     </Grid>
                 </StackPanel>
             </GroupBox>
 
             <!-- General Settings -->
-            <GroupBox Header="Geral" Foreground="White" FontSize="16" FontWeight="Bold" BorderBrush="Gray" Margin="0,20,0,0">
+            <GroupBox Header="Geral" Style="{StaticResource {x:Type GroupBox}}" Margin="0,20,0,0">
                 <StackPanel Margin="10">
-                    <CheckBox Content="Habilitar notificações por email" IsChecked="True" Foreground="White"/>
-                    <CheckBox Content="Salvar log de eventos em arquivo" IsChecked="True" Foreground="White" Margin="0,10,0,0"/>
+                    <CheckBox Content="Habilitar notificações por email" IsChecked="True" Style="{StaticResource {x:Type CheckBox}}"/>
+                    <CheckBox Content="Salvar log de eventos em arquivo" IsChecked="True" Margin="0,10,0,0" Style="{StaticResource {x:Type CheckBox}}"/>
                 </StackPanel>
             </GroupBox>
 
-            <Button Content="Salvar" Width="120" HorizontalAlignment="Right" Margin="0,20,0,0" Padding="10,5" Background="#FF007ACC" Foreground="White"/>
+            <Button x:Name="ConnectButton" Content="Conectar" Width="120" HorizontalAlignment="Right" Margin="0,20,0,0" Click="ConnectButton_Click" Style="{StaticResource {x:Type Button}}"/>
         </StackPanel>
     </Grid>
 </UserControl>

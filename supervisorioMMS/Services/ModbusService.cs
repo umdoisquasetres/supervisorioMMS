@@ -1,7 +1,9 @@
 using NModbus;
 using System;
+using System.IO.Ports;
 using System.Linq;
 using System.Net.Sockets;
+using NModbus.Serial; // Adicionado para SerialPortAdapter
 
 namespace supervisorioMMS.Services
 {
@@ -10,18 +12,20 @@ namespace supervisorioMMS.Services
         private static readonly Lazy<ModbusService> _instance = new Lazy<ModbusService>(() => new ModbusService());
         public static ModbusService Instance => _instance.Value;
 
-        private TcpClient? _tcpClient;
+        private TcpClient? _tcpClient; // Para conexão TCP
+        private SerialPort? _serialPort; // Para conexão Serial
         private IModbusMaster? _master;
 
-        public bool IsConnected => _tcpClient?.Connected ?? false;
+        public bool IsConnected => (_tcpClient?.Connected ?? false) || (_serialPort?.IsOpen ?? false);
 
         private ModbusService() { }
 
+        // Conexão TCP/IP (mantida para compatibilidade, se necessário)
         public bool Connect(string ipAddress, int port)
         {
             try
             {
-                Disconnect(); // Garante que qualquer conexão anterior seja fechada
+                Disconnect();
                 _tcpClient = new TcpClient(ipAddress, port);
                 var factory = new ModbusFactory();
                 _master = factory.CreateMaster(_tcpClient);
@@ -29,7 +33,32 @@ namespace supervisorioMMS.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro ao conectar Modbus: {ex.Message}");
+                Console.WriteLine($"Erro ao conectar Modbus TCP: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Nova Conexão Serial (Modbus RTU)
+        public bool Connect(string comPort, int baudRate, int dataBits, Parity parity, StopBits stopBits)
+        {
+            try
+            {
+                Disconnect();
+                _serialPort = new SerialPort(comPort);
+                _serialPort.BaudRate = baudRate;
+                _serialPort.DataBits = dataBits;
+                _serialPort.Parity = parity;
+                _serialPort.StopBits = stopBits;
+                _serialPort.Open();
+
+                var factory = new ModbusFactory();
+                // Envolve SerialPort em um SerialPortAdapter para NModbus
+                _master = factory.CreateRtuMaster(new SerialPortAdapter(_serialPort));
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao conectar Modbus RTU: {ex.Message}");
                 return false;
             }
         }
@@ -37,6 +66,7 @@ namespace supervisorioMMS.Services
         public void Disconnect()
         {
             _tcpClient?.Close();
+            _serialPort?.Close();
         }
 
         public int[]? ReadHoldingRegisters(int startingAddress, int quantity)
@@ -44,7 +74,6 @@ namespace supervisorioMMS.Services
             if (!IsConnected || _master == null) return null;
             try
             {
-                // NModbus retorna ushort[], então convertemos para int[]
                 ushort[] result = _master.ReadHoldingRegisters(0, (ushort)startingAddress, (ushort)quantity);
                 return Array.ConvertAll(result, val => (int)val);
             }

@@ -12,14 +12,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Histórico de Dados" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="0" Text="Histórico de Dados" Style="{StaticResource {x:Type TextBlock}}" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
         <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
-            <TextBlock Text="De:" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
-            <DatePicker x:Name="StartDatePicker" Width="150"/>
-            <TextBlock Text="Até:" Foreground="White" VerticalAlignment="Center" Margin="10,0,5,0"/>
-            <DatePicker x:Name="EndDatePicker" Width="150"/>
-            <Button Content="Buscar" Width="100" Margin="10,0,0,0" Padding="10,5" Background="#FF007ACC" Foreground="White"/>
+            <TextBlock Text="De:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <DatePicker x:Name="StartDatePicker" Width="150" Style="{StaticResource {x:Type DatePicker}}"/>
+            <TextBlock Text="Até:" Style="{StaticResource {x:Type TextBlock}}" VerticalAlignment="Center" Margin="10,0,5,0"/>
+            <DatePicker x:Name="EndDatePicker" Width="150" Style="{StaticResource {x:Type DatePicker}}"/>
+            <Button Content="Buscar" Width="100" Margin="10,0,0,0" Style="{StaticResource {x:Type Button}}"/>
         </StackPanel>
 
         <DataGrid Grid.Row="2" x:Name="HistoryGrid" Style="{StaticResource SupervisorioDataGridStyle}">
