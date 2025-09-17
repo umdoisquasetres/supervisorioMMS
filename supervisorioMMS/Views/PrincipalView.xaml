@@ -4,41 +4,70 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:supervisorioMMS.Views"
-             xmlns:converters="clr-namespace:supervisorioMMS.Converters"
+             xmlns:models="clr-namespace:supervisorioMMS.Models"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
-    <UserControl.Resources>
-        <converters:BoolToBrushConverter x:Key="BoolToBrush"/>
-    </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Process Visualization -->
-        <Border Grid.Column="0" Background="#FF2D2D2D" CornerRadius="5" Padding="10">
-            <Canvas>
-                <!-- Motor -->
-                <Ellipse x:Name="MotorIndicator" Fill="{Binding Value, Converter={StaticResource BoolToBrush}}" Width="80" Height="80" Canvas.Left="400" Canvas.Top="110"/>
-                <TextBlock Text="Motor M-101" Foreground="White" Canvas.Left="400" Canvas.Top="200"/>
-
-                <!-- Tanque -->
-                <Rectangle Fill="#FF4A4A4A" Width="150" Height="200" Canvas.Left="50" Canvas.Top="150"/>
-                <TextBlock Text="Tanque 1" Foreground="White" FontSize="14" Canvas.Left="90" Canvas.Top="120"/>
-                <TextBlock x:Name="NivelTanqueText" Text="{Binding Value, StringFormat=Nível: {0}%}" Foreground="White" FontSize="14" Canvas.Left="95" Canvas.Top="360"/>
-            </Canvas>
+        <!-- Caixa de Ferramentas -->
+        <Border Grid.Column="0" Background="#FF2D2D2D">
+            <StackPanel>
+                <TextBlock Text="Componentes" Foreground="White" FontSize="16" FontWeight="Bold" Padding="10"/>
+                <ListBox x:Name="ToolboxList" Background="Transparent" BorderThickness="0" Foreground="White">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Padding="10,5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Toolbox_PreviewMouseLeftButtonDown"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </StackPanel>
         </Border>
 
-        <!-- Controls and Data -->
-        <StackPanel Grid.Column="1" Margin="20,0,0,0">
-            <Border Background="#FF2D2D2D" CornerRadius="5" Padding="15">
-                <StackPanel>
-                    <TextBlock Text="Controle do Motor M-101" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                    <Button x:Name="BtnMotorOn" Content="Ligar" Margin="0,10,0,5" Click="BtnMotorOn_Click" Background="#FF28A745" Foreground="White" Padding="10,5"/>
-                    <Button x:Name="BtnMotorOff" Content="Desligar" Click="BtnMotorOff_Click" Background="#FFDC3545" Foreground="White" Padding="10,5"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+        <!-- Área de Edição (Canvas) -->
+        <ItemsControl Grid.Column="1" x:Name="EditorItemsControl" ItemsSource="{Binding SynopticItems}" AllowDrop="True" Drop="EditorCanvas_Drop">
+            <ItemsControl.Resources>
+                <!-- Template para renderizar um Motor -->
+                <DataTemplate DataType="{x:Type models:SynopticMotor}">
+                    <StackPanel>
+                        <Ellipse Fill="CornflowerBlue" Width="80" Height="80"/>
+                        <TextBlock Text="{Binding Label}" Foreground="White" HorizontalAlignment="Center"/>
+                    </StackPanel>
+                </DataTemplate>
+                <!-- Template para renderizar um Sensor -->
+                <DataTemplate DataType="{x:Type models:SynopticSensor}">
+                    <Border Background="#FF4A4A4A" Padding="10" CornerRadius="3">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Label}" Foreground="White"/>
+                            <TextBlock Text="{Binding Value}" Foreground="LawnGreen" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.Resources>
+            
+            <!-- Define o painel onde os itens serão desenhados -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Background="#FF1E1E1E"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+
+            <!-- Define como a posição de cada item é controlada -->
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="EditorItem_PreviewMouseLeftButtonDown"/>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+        </ItemsControl>
     </Grid>
 </UserControl>
