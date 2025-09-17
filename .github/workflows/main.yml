@@ -1,0 +1,50 @@
+# Nome do workflow
+name: Construir e Lançar o SupervisorioMMS
+
+# Gatilho: A automação é acionada quando uma tag que começa com 'v' é empurrada (push).
+# Isto é o ideal para criar novas versões (releases).
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    # A tarefa será executada numa máquina virtual Windows
+    runs-on: windows-latest
+
+    steps:
+    # 1. Faz o checkout (download) do seu código para a máquina virtual
+    - name: Checkout do código
+      uses: actions/checkout@v4
+
+    # 2. Instala a versão correta do .NET (8.0.x, como no seu ficheiro .csproj)
+    - name: Instalar .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    # 3. Restaura as dependências do seu projeto (pacotes NuGet)
+    # O caminho para o seu ficheiro de solução é 'supervisorioMMS.sln'
+    - name: Restaurar dependências
+      run: dotnet restore supervisorioMMS.sln
+
+    # 4. Compila e publica o seu projeto para criar o .exe
+    # Usamos o comando 'dotnet publish' que é mais direto para este objetivo.
+    #    -c Release: Compila em modo otimizado para lançamento.
+    #    --self-contained: Garante que o .NET está incluído no .exe, para que funcione em qualquer PC com Windows.
+    #    -p:PublishSingleFile=true: Agrupa tudo num único ficheiro executável.
+    #    -o ./publish: A pasta de destino para o ficheiro gerado.
+    - name: Publicar a aplicação
+      run: dotnet publish "supervisorioMMS/supervisorioMMS.csproj" -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -o ./publish
+
+    # 5. Cria a Release no GitHub e anexa o .exe
+    # Esta ação cria a página da Release e faz o upload do ficheiro da pasta 'publish'.
+    - name: Criar Release e Anexar Executável
+      uses: softprops/action-gh-release@v1
+      with:
+        # Aponta para o ficheiro .exe que foi gerado no passo anterior
+        files: ./publish/supervisorioMMS.exe
+      env:
+        # Token de autenticação automático para permitir que a action modifique o seu repositório
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
