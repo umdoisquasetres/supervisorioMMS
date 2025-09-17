@@ -12,7 +12,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Visualizador de Alarmes" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="0" Text="Visualizador de Alarmes" Style="{StaticResource {x:Type TextBlock}}" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
         <DataGrid Grid.Row="1" x:Name="AlarmsGrid" Style="{StaticResource SupervisorioDataGridStyle}">
             <DataGrid.Columns>
@@ -24,8 +24,8 @@
         </DataGrid>
 
         <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
-                        <Button Content="Reconhecer" Width="120" Margin="5" Padding="10,5" Background="#FF007ACC" Foreground="White" Click="AcknowledgeButton_Click"/>
-            <Button Content="Limpar" Width="120" Margin="5" Padding="10,5" Background="#FF5A5A5A" Foreground="White"/>
+            <Button Content="Reconhecer" Width="120" Margin="5" Click="AcknowledgeButton_Click" Style="{StaticResource {x:Type Button}}"/>
+            <Button Content="Limpar" Width="120" Margin="5" Style="{StaticResource {x:Type Button}}" Background="{StaticResource SecondaryBackgroundColor}"/>
         </StackPanel>
     </Grid>
 </UserControl>

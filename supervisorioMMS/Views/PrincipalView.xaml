@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:supervisorioMMS.Views"
+             xmlns:models="clr-namespace:supervisorioMMS.Models"
              xmlns:converters="clr-namespace:supervisorioMMS.Converters"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="1000">
@@ -12,33 +13,109 @@
     </UserControl.Resources>
     <Grid>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="2*"/>
-            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="150"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="250"/>
         </Grid.ColumnDefinitions>
 
-        <!-- Process Visualization -->
-        <Border Grid.Column="0" Background="#FF2D2D2D" CornerRadius="5" Padding="10">
-            <Canvas>
-                <!-- Motor -->
-                <Ellipse x:Name="MotorIndicator" Fill="{Binding Value, Converter={StaticResource BoolToBrush}}" Width="80" Height="80" Canvas.Left="400" Canvas.Top="110"/>
-                <TextBlock Text="Motor M-101" Foreground="White" Canvas.Left="400" Canvas.Top="200"/>
-
-                <!-- Tanque -->
-                <Rectangle Fill="#FF4A4A4A" Width="150" Height="200" Canvas.Left="50" Canvas.Top="150"/>
-                <TextBlock Text="Tanque 1" Foreground="White" FontSize="14" Canvas.Left="90" Canvas.Top="120"/>
-                <TextBlock x:Name="NivelTanqueText" Text="{Binding Value, StringFormat=Nível: {0}%}" Foreground="White" FontSize="14" Canvas.Left="95" Canvas.Top="360"/>
-            </Canvas>
+        <!-- Caixa de Ferramentas -->
+        <Border Grid.Column="0" Background="{StaticResource SecondaryBackgroundColor}">
+            <StackPanel>
+                <TextBlock Text="Componentes" Style="{StaticResource {x:Type TextBlock}}" FontSize="16" FontWeight="Bold" Padding="10"/>
+                <ListBox x:Name="ToolboxList" Background="Transparent" BorderThickness="0" Foreground="{StaticResource TextColor}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding}" Padding="10,5"/>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="Toolbox_PreviewMouseLeftButtonDown"/>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
+            </StackPanel>
         </Border>
 
-        <!-- Controls and Data -->
-        <StackPanel Grid.Column="1" Margin="20,0,0,0">
-            <Border Background="#FF2D2D2D" CornerRadius="5" Padding="15">
-                <StackPanel>
-                    <TextBlock Text="Controle do Motor M-101" Foreground="White" FontSize="16" FontWeight="Bold"/>
-                    <Button x:Name="BtnMotorOn" Content="Ligar" Margin="0,10,0,5" Click="BtnMotorOn_Click" Background="#FF28A745" Foreground="White" Padding="10,5"/>
-                    <Button x:Name="BtnMotorOff" Content="Desligar" Click="BtnMotorOff_Click" Background="#FFDC3545" Foreground="White" Padding="10,5"/>
-                </StackPanel>
-            </Border>
-        </StackPanel>
+        <!-- Área de Edição (Canvas) -->
+        <ItemsControl Grid.Column="1" x:Name="EditorItemsControl" ItemsSource="{Binding SynopticItems}" AllowDrop="True" Drop="EditorCanvas_Drop">
+            <ItemsControl.Resources>
+                <!-- Template para renderizar um Motor -->
+                <DataTemplate DataType="{x:Type models:SynopticMotor}">
+                    <StackPanel>
+                        <Ellipse Fill="{Binding LinkedTag.Value, Converter={StaticResource BoolToBrush}}" Width="80" Height="80"/>
+                        <TextBlock Text="{Binding Label}" Style="{StaticResource {x:Type TextBlock}}" HorizontalAlignment="Center"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,5,0,0">
+                            <Button Content="Ligar" Command="{Binding TurnOnCommand}" Click="MotorOn_Click" Style="{StaticResource {x:Type Button}}" Width="50" Height="25" Margin="2"/>
+                            <Button Content="Desligar" Command="{Binding TurnOffCommand}" Click="MotorOff_Click" Style="{StaticResource {x:Type Button}}" Width="50" Height="25" Margin="2"/>
+                        </StackPanel>
+                    </StackPanel>
+                </DataTemplate>
+                <!-- Template para renderizar um Sensor -->
+                <DataTemplate DataType="{x:Type models:SynopticSensor}">
+                    <Border Background="{StaticResource SecondaryBackgroundColor}" Padding="10" CornerRadius="3">
+                        <StackPanel>
+                            <TextBlock Text="{Binding Label}" Style="{StaticResource {x:Type TextBlock}}"/>
+                            <TextBlock Text="{Binding LinkedTag.Value}" Foreground="{StaticResource SuccessColor}" FontSize="16" FontWeight="Bold"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+
+                <!-- Estilo para seleção de item -->
+                <Style TargetType="ContentPresenter">
+                    <Setter Property="Canvas.Left" Value="{Binding X}"/>
+                    <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+                    <EventSetter Event="PreviewMouseLeftButtonDown" Handler="EditorItem_PreviewMouseLeftButtonDown"/>
+                    <EventSetter Event="MouseLeftButtonUp" Handler="EditorItem_MouseLeftButtonUp"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <Setter Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="{Binding Source={StaticResource HighlightColor}, Path=Color}" ShadowDepth="0" BlurRadius="10"/>
+                                </Setter.Value>
+                            </Setter>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </ItemsControl.Resources>
+            
+            <!-- Define o painel onde os itens serão desenhados -->
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas Background="{StaticResource PrimaryBackgroundColor}"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+        </ItemsControl>
+
+        <!-- Painel de Propriedades -->
+        <Border Grid.Column="2" Background="{StaticResource SecondaryBackgroundColor}" Padding="10">
+            <StackPanel>
+                <TextBlock Text="Propriedades" Style="{StaticResource {x:Type TextBlock}}" FontSize="16" FontWeight="Bold" Margin="0,0,0,10"/>
+                <ContentControl Content="{Binding SelectedSynopticItem}">
+                    <ContentControl.Resources>
+                        <!-- Template para propriedades de Motor -->
+                        <DataTemplate DataType="{x:Type models:SynopticMotor}">
+                            <StackPanel>
+                                <TextBlock Text="Nome:" Style="{StaticResource {x:Type TextBlock}}"/>
+                                <TextBox Text="{Binding Label}" Margin="0,5,0,10"/>
+
+                                <TextBlock Text="Tag Modbus:" Style="{StaticResource {x:Type TextBlock}}"/>
+                                <TextBox Text="{Binding TagName}" Margin="0,5,0,10"/>
+                            </StackPanel>
+                        </DataTemplate>
+                        <!-- Template para propriedades de Sensor -->
+                        <DataTemplate DataType="{x:Type models:SynopticSensor}">
+                            <StackPanel>
+                                <TextBlock Text="Nome:" Style="{StaticResource {x:Type TextBlock}}"/>
+                                <TextBox Text="{Binding Label}" Margin="0,5,0,10"/>
+
+                                <TextBlock Text="Tag Modbus:" Style="{StaticResource {x:Type TextBlock}}"/>
+                                <TextBox Text="{Binding TagName}" Margin="0,5,0,10"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ContentControl.Resources>
+                </ContentControl>
+            </StackPanel>
+        </Border>
     </Grid>
 </UserControl>
