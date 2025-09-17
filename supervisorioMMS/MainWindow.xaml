@@ -61,7 +61,9 @@
                 <Button x:Name="NavAlarmes" Content="Alarmes" Style="{StaticResource NavButton}" Click="NavAlarmes_Click"/>
                 <Button x:Name="NavHistorico" Content="Histórico" Style="{StaticResource NavButton}" Click="NavHistorico_Click"/>
                 <Button x:Name="NavGraficos" Content="Gráficos" Style="{StaticResource NavButton}" Click="NavGraficos_Click"/>
-                <Button x:Name="NavConfiguracoes" Content="Configurações" Style="{StaticResource NavButton}" Click="NavConfiguracoes_Click"/>
+                                <Button x:Name="NavConfiguracoes" Content="Configurações" Style="{StaticResource NavButton}" Click="NavConfiguracoes_Click"/>
+                                <Button x:Name="NavUsuarios" Content="Usuários" Style="{StaticResource NavButton}" Click="NavUsuarios_Click"/>
+                <Button x:Name="NavTags" Content="Tags" Style="{StaticResource NavButton}" Click="NavTags_Click"/>
             </StackPanel>
         </Border>
 

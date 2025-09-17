@@ -31,9 +31,19 @@ namespace supervisorioMMS
             MainContent.Content = new GraficosView();
         }
 
-        private void NavConfiguracoes_Click(object sender, RoutedEventArgs e)
+                private void NavConfiguracoes_Click(object sender, RoutedEventArgs e)
         {
             MainContent.Content = new ConfiguracoesView();
+        }
+
+                private void NavUsuarios_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new UsuariosView();
+        }
+
+        private void NavTags_Click(object sender, RoutedEventArgs e)
+        {
+            MainContent.Content = new TagConfigView();
         }
     }
 }

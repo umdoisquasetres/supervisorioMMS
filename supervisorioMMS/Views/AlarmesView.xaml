@@ -14,33 +14,7 @@
 
         <TextBlock Grid.Row="0" Text="Visualizador de Alarmes" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
 
-        <DataGrid Grid.Row="1" x:Name="AlarmsGrid" AutoGenerateColumns="False" IsReadOnly="True"
-                  Background="#FF2D2D2D" Foreground="White" BorderBrush="Gray"
-                  HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalScrollBarVisibility="Disabled">
-            <DataGrid.Resources>
-                <Style TargetType="DataGridColumnHeader">
-                    <Setter Property="Background" Value="#FF007ACC"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Setter Property="FontWeight" Value="Bold"/>
-                    <Setter Property="Padding" Value="10,5"/>
-                </Style>
-                <Style TargetType="DataGridRow">
-                    <Setter Property="Background" Value="#FF2D2D2D"/>
-                    <Setter Property="Foreground" Value="White"/>
-                    <Style.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="#FF3E3E3E"/>
-                        </Trigger>
-                        <Trigger Property="IsSelected" Value="True">
-                            <Setter Property="Background" Value="#FF005A9E"/>
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-                <Style TargetType="DataGridCell">
-                    <Setter Property="Padding" Value="10,5"/>
-                    <Setter Property="BorderThickness" Value="0"/>
-                </Style>
-            </DataGrid.Resources>
+        <DataGrid Grid.Row="1" x:Name="AlarmsGrid" Style="{StaticResource SupervisorioDataGridStyle}">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Data/Hora" Binding="{Binding Timestamp}" Width="*"/>
                 <DataGridTextColumn Header="Descrição" Binding="{Binding Description}" Width="2*"/>
