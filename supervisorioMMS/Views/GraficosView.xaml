@@ -1,0 +1,38 @@
+<UserControl x:Class="supervisorioMMS.Views.GraficosView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Gráficos de Tendência" Foreground="White" FontSize="22" FontWeight="Bold" Margin="0,0,0,20"/>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,10">
+            <TextBlock Text="Tag 1:" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Width="200" Margin="0,0,20,0">
+                <ComboBoxItem IsSelected="True">Temperatura Tanque 1</ComboBoxItem>
+                <ComboBoxItem>Pressão Linha</ComboBoxItem>
+                <ComboBoxItem>Nível Tanque 1</ComboBoxItem>
+            </ComboBox>
+            <TextBlock Text="Tag 2:" Foreground="White" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <ComboBox Width="200">
+                <ComboBoxItem>Temperatura Tanque 1</ComboBoxItem>
+                <ComboBoxItem IsSelected="True">Pressão Linha</ComboBoxItem>
+                <ComboBoxItem>Nível Tanque 1</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
+
+        <Border Grid.Row="2" Background="#FF2D2D2D" CornerRadius="5">
+            <TextBlock Text="Aqui seria exibido o gráfico. É necessário instalar uma biblioteca de gráficos como LiveCharts para WPF."
+                       Foreground="White" FontSize="16" TextWrapping="Wrap" 
+                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
+    </Grid>
+</UserControl>
