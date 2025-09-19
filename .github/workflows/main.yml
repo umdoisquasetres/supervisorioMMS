@@ -1,11 +1,5 @@
-<<<<<<< HEAD
-# This workflow will build a .NET desktop application.
-
-name: .NET Core Desktop Build
-=======
 # Nome do workflow
 name: Construir e Lançar o SupervisorioMMS
->>>>>>> c759ed5a254b033b467e5433e64ba063a7bd09ed
 
 # Gatilho: A automação é acionada quando uma tag que começa com 'v' é empurrada (push).
 # Isto é o ideal para criar novas versões (releases).
@@ -16,59 +10,20 @@ on:
 
 jobs:
   build:
-<<<<<<< HEAD
-    strategy:
-      matrix:
-        configuration: [Debug, Release]
-
-    runs-on: windows-latest  # Use a Windows runner for WPF applications
-
-    env:
-      Solution_Name: supervisorioMMS.sln
-      Project_Path: supervisorioMMS/supervisorioMMS.csproj
-=======
     # A tarefa será executada numa máquina virtual Windows
     runs-on: windows-latest
->>>>>>> c759ed5a254b033b467e5433e64ba063a7bd09ed
 
     steps:
     # 1. Faz o checkout (download) do seu código para a máquina virtual
     - name: Checkout do código
       uses: actions/checkout@v4
 
-<<<<<<< HEAD
-    # Install the .NET Core SDK
-    - name: Install .NET
-=======
     # 2. Instala a versão correta do .NET (8.0.x, como no seu ficheiro .csproj)
     - name: Instalar .NET Core
->>>>>>> c759ed5a254b033b467e5433e64ba063a7bd09ed
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x # You can change this to your target .NET version
+        dotnet-version: 8.0.x
 
-<<<<<<< HEAD
-    # Restore dependencies
-    - name: Restore
-      run: dotnet restore $env:Solution_Name
-
-    # Build the application
-    - name: Build
-      run: dotnet build $env:Solution_Name --configuration ${{ matrix.configuration }} --no-restore
-
-    # Publish the application (only for Release configuration)
-    - name: Publish
-      if: matrix.configuration == 'Release'
-      run: dotnet publish $env:Project_Path --configuration ${{ matrix.configuration }} --no-build --output ./publish
-
-    # Upload the published application as an artifact
-    - name: Upload build artifacts
-      if: matrix.configuration == 'Release'
-      uses: actions/upload-artifact@v4
-      with:
-        name: WPF App (${{ matrix.configuration }})
-        path: ./publish
-=======
     # 3. Restaura as dependências do seu projeto (pacotes NuGet)
     # O caminho para o seu ficheiro de solução é 'supervisorioMMS.sln'
     - name: Restaurar dependências
@@ -93,4 +48,3 @@ jobs:
       env:
         # Token de autenticação automático para permitir que a action modifique o seu repositório
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
->>>>>>> c759ed5a254b033b467e5433e64ba063a7bd09ed
