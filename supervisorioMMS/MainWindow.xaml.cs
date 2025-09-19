@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 using supervisorioMMS.Models;
 using supervisorioMMS.Views;
@@ -11,12 +12,14 @@ namespace supervisorioMMS
 {
     public partial class MainWindow : Window
     {
+        private readonly IServiceProvider _serviceProvider;
         private PrincipalView? _principalView;
 
-        public MainWindow()
+        public MainWindow(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-            _principalView = new PrincipalView();
+            _serviceProvider = serviceProvider;
+            _principalView = _serviceProvider.GetRequiredService<PrincipalView>();
             MainContent.Content = _principalView;
         }
 
@@ -24,39 +27,39 @@ namespace supervisorioMMS
         {
             if (_principalView == null)
             {
-                _principalView = new PrincipalView();
+                _principalView = _serviceProvider.GetRequiredService<PrincipalView>();
             }
             MainContent.Content = _principalView;
         }
 
         private void NavAlarmes_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new AlarmesView();
+            MainContent.Content = _serviceProvider.GetRequiredService<AlarmesView>();
         }
 
         private void NavHistorico_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new HistoricoView();
+            MainContent.Content = _serviceProvider.GetRequiredService<HistoricoView>();
         }
 
         private void NavGraficos_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new GraficosView();
+            MainContent.Content = _serviceProvider.GetRequiredService<GraficosView>();
         }
 
         private void NavConfiguracoes_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new ConfiguracoesView();
+            MainContent.Content = _serviceProvider.GetRequiredService<ConfiguracoesView>();
         }
 
         private void NavUsuarios_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new UsuariosView();
+            MainContent.Content = _serviceProvider.GetRequiredService<UsuariosView>();
         }
 
         private void NavTags_Click(object sender, RoutedEventArgs e)
         {
-            MainContent.Content = new TagConfigView();
+            MainContent.Content = _serviceProvider.GetRequiredService<TagConfigView>();
         }
 
         private async void SaveSynoptic_Click(object sender, RoutedEventArgs e)
@@ -95,7 +98,7 @@ namespace supervisorioMMS
         {
             if (_principalView == null)
             {
-                _principalView = new PrincipalView();
+                _principalView = _serviceProvider.GetRequiredService<PrincipalView>();
                 MainContent.Content = _principalView;
             }
 

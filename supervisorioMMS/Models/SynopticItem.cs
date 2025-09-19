@@ -7,6 +7,7 @@ namespace supervisorioMMS.Models
 {
     public class SynopticItem : INotifyPropertyChanged
     {
+        protected readonly TagService _tagService;
         private double _x;
         private double _y;
         private string _tagName = string.Empty;
@@ -65,15 +66,16 @@ namespace supervisorioMMS.Models
             }
         }
 
-        public SynopticItem()
+        public SynopticItem(TagService tagService)
         {
-            TagService.Instance.Tags.CollectionChanged += (sender, e) => UpdateLinkedTag();
+            _tagService = tagService;
+            _tagService.Tags.CollectionChanged += (sender, e) => UpdateLinkedTag();
             UpdateLinkedTag();
         }
 
         private void UpdateLinkedTag()
         {
-            LinkedTag = TagService.Instance.Tags.FirstOrDefault(t => t.Name == TagName);
+            LinkedTag = _tagService.Tags.FirstOrDefault(t => t.Name == TagName);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
@@ -87,11 +89,13 @@ namespace supervisorioMMS.Models
     {
         public string Label { get; set; } = "Motor";
 
+        public SynopticMotor(TagService tagService) : base(tagService) { }
+
         public void TurnOn()
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                _ = TagService.Instance.WriteTagValueAsync(TagName, true);
+                _ = _tagService.WriteTagValueAsync(TagName, true);
             }
         }
 
@@ -99,7 +103,7 @@ namespace supervisorioMMS.Models
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                _ = TagService.Instance.WriteTagValueAsync(TagName, false);
+                _ = _tagService.WriteTagValueAsync(TagName, false);
             }
         }
     }
@@ -107,17 +111,19 @@ namespace supervisorioMMS.Models
     public class SynopticSensor : SynopticItem
     {
         public string Label { get; set; } = "Sensor";
+        public SynopticSensor(TagService tagService) : base(tagService) { }
     }
 
     public class SynopticValve : SynopticItem
     {
         public string Label { get; set; } = "Válvula";
+        public SynopticValve(TagService tagService) : base(tagService) { }
 
         public void Open()
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                _ = TagService.Instance.WriteTagValueAsync(TagName, true);
+                _ = _tagService.WriteTagValueAsync(TagName, true);
             }
         }
 
@@ -125,7 +131,7 @@ namespace supervisorioMMS.Models
         {
             if (LinkedTag != null && LinkedTag.DataType == ModbusDataType.Coil)
             {
-                _ = TagService.Instance.WriteTagValueAsync(TagName, false);
+                _ = _tagService.WriteTagValueAsync(TagName, false);
             }
         }
     }
@@ -134,5 +140,6 @@ namespace supervisorioMMS.Models
     {
         public string Label { get; set; } = "Display";
         public string Unit { get; set; } = "%";
+        public SynopticValueDisplay(TagService tagService) : base(tagService) { }
     }
 }

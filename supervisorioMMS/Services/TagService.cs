@@ -40,14 +40,13 @@ namespace supervisorioMMS.Services
 
     public class TagService
     {
-        private static readonly Lazy<TagService> _instance = new Lazy<TagService>(() => new TagService());
-        public static TagService Instance => _instance.Value;
-
+        private readonly ModbusService _modbusService;
         public ObservableCollection<ModbusTag> Tags { get; }
         private readonly DispatcherTimer _pollingTimer;
 
-        private TagService()
+        public TagService(ModbusService modbusService)
         {
+            _modbusService = modbusService;
             Tags = new ObservableCollection<ModbusTag>
             {
                 new ModbusTag { Name = "Motor_M101_Status", Address = 0, DataType = ModbusDataType.Coil, Value = false },
@@ -65,9 +64,9 @@ namespace supervisorioMMS.Services
             _pollingTimer.Start();
         }
 
-        private async void PollingTimer_Tick(object sender, EventArgs e)
+        private async void PollingTimer_Tick(object? sender, EventArgs e)
         {
-            if (!ModbusService.Instance.IsConnected) return;
+            if (!_modbusService.IsConnected) return;
 
             foreach (var tag in Tags.ToList())
             {
@@ -76,14 +75,14 @@ namespace supervisorioMMS.Services
                     switch (tag.DataType)
                     {
                         case ModbusDataType.Coil:
-                            bool[] coilValues = await ModbusService.Instance.ReadCoilsAsync(tag.Address, 1);
+                            bool[]? coilValues = await _modbusService.ReadCoilsAsync(tag.Address, 1);
                             if (coilValues != null && coilValues.Length > 0)
                             {
                                 tag.Value = coilValues[0];
                             }
                             break;
                         case ModbusDataType.HoldingRegister:
-                            int[] registerValues = await ModbusService.Instance.ReadHoldingRegistersAsync(tag.Address, 1);
+                            int[]? registerValues = await _modbusService.ReadHoldingRegistersAsync(tag.Address, 1);
                             if (registerValues != null && registerValues.Length > 0)
                             {
                                 tag.Value = registerValues[0];
@@ -100,7 +99,7 @@ namespace supervisorioMMS.Services
 
         public async Task WriteTagValueAsync(string tagName, object value)
         {
-            if (!ModbusService.Instance.IsConnected)
+            if (!_modbusService.IsConnected)
             {
                 Console.WriteLine("Não é possível escrever o valor. Modbus não está conectado.");
                 return;
@@ -120,13 +119,13 @@ namespace supervisorioMMS.Services
                     case ModbusDataType.Coil:
                         if (value is bool boolValue)
                         {
-                            await ModbusService.Instance.WriteSingleCoilAsync(tag.Address, boolValue);
+                            await _modbusService.WriteSingleCoilAsync(tag.Address, boolValue);
                         }
                         break;
                     case ModbusDataType.HoldingRegister:
                         if (value is int intValue || (value is string s && int.TryParse(s, out intValue)))
                         {
-                            await ModbusService.Instance.WriteSingleRegisterAsync(tag.Address, intValue);
+                            await _modbusService.WriteSingleRegisterAsync(tag.Address, intValue);
                         }
                         break;
                 }

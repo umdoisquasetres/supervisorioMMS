@@ -9,16 +9,13 @@ namespace supervisorioMMS.Services
 {
     public class ModbusService
     {
-        private static readonly Lazy<ModbusService> _instance = new Lazy<ModbusService>(() => new ModbusService());
-        public static ModbusService Instance => _instance.Value;
-
         private TcpClient? _tcpClient;
         private SerialPort? _serialPort;
         private IModbusMaster? _master;
 
         public bool IsConnected => (_tcpClient?.Connected ?? false) || (_serialPort?.IsOpen ?? false);
 
-        private ModbusService() { }
+        public ModbusService() { }
 
         public async Task<bool> ConnectTcpAsync(string ipAddress, int port)
         {

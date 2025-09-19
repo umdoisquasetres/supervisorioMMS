@@ -5,10 +5,10 @@ namespace supervisorioMMS.Views
 {
     public partial class TagConfigView : UserControl
     {
-        public TagConfigView()
+        public TagConfigView(TagConfigViewModel viewModel)
         {
             InitializeComponent();
-            DataContext = new TagConfigViewModel();
+            DataContext = viewModel;
         }
     }
 }

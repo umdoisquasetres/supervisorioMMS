@@ -8,7 +8,8 @@ namespace supervisorioMMS.ViewModels
 {
     public class TagConfigViewModel : BaseViewModel
     {
-        public ObservableCollection<ModbusTag> Tags => TagService.Instance.Tags;
+        private readonly TagService _tagService;
+        public ObservableCollection<ModbusTag> Tags => _tagService.Tags;
 
         private ModbusTag? _selectedTag;
         public ModbusTag? SelectedTag
@@ -60,8 +61,9 @@ namespace supervisorioMMS.ViewModels
         public ICommand EditCommand { get; }
         public ICommand RemoveCommand { get; }
 
-        public TagConfigViewModel()
+        public TagConfigViewModel(TagService tagService)
         {
+            _tagService = tagService;
             AddOrSaveCommand = new RelayCommand(_ => AddOrSaveTag());
             EditCommand = new RelayCommand(_ => EditTag(), _ => SelectedTag != null);
             RemoveCommand = new RelayCommand(_ => RemoveTag(), _ => SelectedTag != null);

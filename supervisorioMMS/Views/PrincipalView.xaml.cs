@@ -1,4 +1,5 @@
 using supervisorioMMS.Models;
+using supervisorioMMS.Services;
 using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -11,6 +12,7 @@ namespace supervisorioMMS.Views
 {
     public partial class PrincipalView : UserControl, INotifyPropertyChanged
     {
+        private readonly TagService _tagService;
         public ObservableCollection<SynopticItem> SynopticItems { get; set; }
 
         private SynopticItem? _selectedSynopticItem;
@@ -43,9 +45,10 @@ namespace supervisorioMMS.Views
         private int _valveCounter = 0;
         private int _displayCounter = 0;
 
-        public PrincipalView()
+        public PrincipalView(TagService tagService)
         {
             InitializeComponent();
+            _tagService = tagService;
             this.DataContext = this;
             SynopticItems = new ObservableCollection<SynopticItem>();
             ToolboxList.ItemsSource = new[] { "Motor", "Sensor", "Válvula", "Display de Valor" };
@@ -72,7 +75,7 @@ namespace supervisorioMMS.Views
         private void EditorCanvas_Drop(object sender, DragEventArgs e)
         {
             Point dropPosition = e.GetPosition(EditorItemsControl);
-            object data = e.Data.GetData(typeof(SynopticMotor)) ?? 
+            object data = e.Data.GetData(typeof(SynopticMotor)) ??
                           e.Data.GetData(typeof(SynopticSensor)) ??
                           e.Data.GetData(typeof(SynopticValve)) ??
                           e.Data.GetData(typeof(SynopticValueDisplay));
@@ -84,9 +87,9 @@ namespace supervisorioMMS.Views
 
                 newX = Math.Max(0, newX);
                 newY = Math.Max(0, newY);
-                if (EditorItemsControl.ActualWidth > 50) 
+                if (EditorItemsControl.ActualWidth > 50)
                     newX = Math.Min(newX, EditorItemsControl.ActualWidth - 80); // Subtrai a largura para não cortar
-                if (EditorItemsControl.ActualHeight > 50) 
+                if (EditorItemsControl.ActualHeight > 50)
                     newY = Math.Min(newY, EditorItemsControl.ActualHeight - 80); // Subtrai a altura para não cortar
 
                 itemToMove.X = newX;
@@ -98,22 +101,22 @@ namespace supervisorioMMS.Views
                 if (componentType == "Motor")
                 {
                     _motorCounter++;
-                    newItem = new SynopticMotor { Label = $"Motor {_motorCounter}" };
+                    newItem = new SynopticMotor(_tagService) { Label = $"Motor {_motorCounter}" };
                 }
                 else if (componentType == "Sensor")
                 {
                     _sensorCounter++;
-                    newItem = new SynopticSensor { Label = $"Sensor {_sensorCounter}" };
+                    newItem = new SynopticSensor(_tagService) { Label = $"Sensor {_sensorCounter}" };
                 }
                 else if (componentType == "Válvula")
                 {
                     _valveCounter++;
-                    newItem = new SynopticValve { Label = $"Válvula {_valveCounter}" };
+                    newItem = new SynopticValve(_tagService) { Label = $"Válvula {_valveCounter}" };
                 }
                 else if (componentType == "Display de Valor")
                 {
                     _displayCounter++;
-                    newItem = new SynopticValueDisplay { Label = $"Display {_displayCounter}", Unit = "N/A" };
+                    newItem = new SynopticValueDisplay(_tagService) { Label = $"Display {_displayCounter}", Unit = "N/A" };
                 }
 
                 if (newItem != null)

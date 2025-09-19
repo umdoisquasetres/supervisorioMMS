@@ -12,6 +12,7 @@ namespace supervisorioMMS.ViewModels
 {
     public class ConfiguracoesViewModel : BaseViewModel
     {
+        private readonly ModbusService _modbusService;
         private bool _isRtuSelected = true;
         private string _selectedComPort;
         private int _selectedBaudRate;
@@ -68,8 +69,9 @@ namespace supervisorioMMS.ViewModels
 
         public ICommand ConnectCommand { get; }
 
-        public ConfiguracoesViewModel()
+        public ConfiguracoesViewModel(ModbusService modbusService)
         {
+            _modbusService = modbusService;
             ComPorts = SerialPort.GetPortNames().ToList();
             ParityOptions = Enum.GetValues(typeof(Parity)).Cast<Parity>().ToList();
             StopBitsOptions = Enum.GetValues(typeof(StopBits)).Cast<StopBits>().ToList();
@@ -87,14 +89,14 @@ namespace supervisorioMMS.ViewModels
 
         private void UpdateConnectionStatus()
         {
-            IsConnected = ModbusService.Instance.IsConnected;
+            IsConnected = _modbusService.IsConnected;
         }
 
         private async Task ToggleConnection()
         {
             if (IsConnected)
             {
-                ModbusService.Instance.Disconnect();
+                _modbusService.Disconnect();
                 UpdateConnectionStatus();
                 return;
             }
@@ -110,7 +112,7 @@ namespace supervisorioMMS.ViewModels
                     IsConnecting = false;
                     return;
                 }
-                success = await ModbusService.Instance.ConnectRtuAsync(SelectedComPort, SelectedBaudRate, SelectedDataBits, SelectedParity, SelectedStopBits);
+                success = await _modbusService.ConnectRtuAsync(SelectedComPort, SelectedBaudRate, SelectedDataBits, SelectedParity, SelectedStopBits);
             }
             else // TCP
             {
@@ -120,7 +122,7 @@ namespace supervisorioMMS.ViewModels
                     IsConnecting = false;
                     return;
                 }
-                success = await ModbusService.Instance.ConnectTcpAsync(IpAddress, port);
+                success = await _modbusService.ConnectTcpAsync(IpAddress, port);
             }
 
             IsConnecting = false;

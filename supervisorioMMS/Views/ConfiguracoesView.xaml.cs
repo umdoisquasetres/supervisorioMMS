@@ -5,10 +5,10 @@ namespace supervisorioMMS.Views
 {
     public partial class ConfiguracoesView : UserControl
     {
-        public ConfiguracoesView()
+        public ConfiguracoesView(ConfiguracoesViewModel viewModel)
         {
             InitializeComponent();
-            DataContext = new ConfiguracoesViewModel();
+            DataContext = viewModel;
         }
     }
 }
