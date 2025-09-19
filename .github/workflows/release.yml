@@ -2,7 +2,6 @@
 name: Criar Release e Publicar Executável
 
 # Gatilho: A automação é acionada quando uma tag que começa com 'v' é enviada.
-# Ex: v1.0, v1.0.1, v2.0-beta
 on:
   push:
     tags:
@@ -12,25 +11,27 @@ jobs:
   build-and-release:
     # A tarefa DEVE ser executada em uma máquina virtual Windows para projetos WPF.
     runs-on: windows-latest
+    
+    # Adiciona permissão de escrita para o token da Action criar a Release.
+    permissions:
+      contents: write
 
     steps:
     # 1. Faz o checkout (download) do seu código para a máquina virtual
     - name: Checkout do código
       uses: actions/checkout@v4
 
-    # 2. Instala a versão correta do .NET (8.0.x, conforme seu arquivo .csproj)
+    # 2. Instala a versão correta do .NET
     - name: Instalar .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
-    # 3. Restaura as dependências do seu projeto (pacotes NuGet)
+    # 3. Restaura as dependências do seu projeto
     - name: Restaurar dependências
       run: dotnet restore supervisorioMMS.sln
 
     # 4. Compila e publica seu projeto para criar o .exe
-    #    --self-contained: Garante que o .NET está incluído, para que funcione em qualquer PC.
-    #    -p:PublishSingleFile=true: Agrupa tudo em um único arquivo executável.
     - name: Publicar a aplicação
       run: dotnet publish "supervisorioMMS/supervisorioMMS.csproj" -c Release --self-contained -r win-x64 -p:PublishSingleFile=true -o ./publish
 
@@ -38,8 +39,6 @@ jobs:
     - name: Criar Release e Anexar Executável
       uses: softprops/action-gh-release@v1
       with:
-        # Aponta para o arquivo .exe que foi gerado no passo anterior
         files: ./publish/supervisorioMMS.exe
       env:
-        # Token de autenticação automático para permitir que a action crie a release
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
